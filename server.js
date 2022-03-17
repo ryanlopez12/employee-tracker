@@ -9,7 +9,7 @@ const mysqlConnect = mysql.createConnection({
   port: process.env.PORT || 3306,
   user: "root",
   dialect: "mysql",
-  password: process.env.DB_PW,
+  password: process.env.DB_PASSWORD,
   database: "emp_DB",
 });
 
@@ -40,7 +40,6 @@ function startPrompt() {
         "View All Departments",
         "View Employees by manager",
         "Add Employee",
-        "Add Department",
         "Add Role",
         "Update Employee Role",
         "Update Employee Manager",
