@@ -2,7 +2,7 @@ const mysql = require("mysql2");
 const inquirer = require("inquirer");
 const figlet = require("figlet");
 require("dotenv").config();
-require("console.table").config();
+require("console.table");
 
 const mysqlConnect = mysql.createConnection({
   host: "localhost",
