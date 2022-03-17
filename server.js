@@ -1,6 +1,5 @@
 const mysql = require("mysql2");
 const inquirer = require("inquirer");
-const figlet = require("figlet");
 require("dotenv").config();
 require("console.table");
 
@@ -10,24 +9,20 @@ const mysqlConnect = mysql.createConnection({
   user: "root",
   dialect: "mysql",
   password: process.env.DB_PASSWORD,
-  database: "emp_DB",
+  database: "employee_DB",
 });
 
 mysqlConnect.connect((err) => {
   if (err) throw err;
-
-  figlet("Employee tracker", function (err, data) {
-    if (err) {
-      console.log("");
-    } else {
-      console.log(data);
-    }
+  console.log(`connected as id ${mysqlConnect.threadId}\n`);
+ 
 
     startPrompt();
   });
-});
+
 
 function startPrompt() {
+   
   const startQuestion = [
     {
       type: "list",
@@ -90,7 +85,7 @@ function startPrompt() {
           break;
         default:
         case "Goodbye!":
-          connection.end();
+          mysqlConnect.end();
       }
     })
     .catch((err) => {
@@ -120,7 +115,7 @@ const viewAll = (table) => {
           LEFT JOIN employee m
             ON m.id = e.manager_id`;
   }
-  connection.query(query, (err, res) => {
+  mysqlConnect.query(query, (err, res) => {
     if (err) throw err;
     console.table(res);
 
@@ -130,7 +125,7 @@ const viewAll = (table) => {
 
 const viewEmployeeByManager = () => {
  
-  connection.query("SELECT * FROM EMPLOYEE", (err, emplRes) => {
+  mysqlConnect.query("SELECT * FROM EMPLOYEE", (err, emplRes) => {
     if (err) throw err;
     const employeeChoice = [
       {
@@ -172,7 +167,7 @@ const viewEmployeeByManager = () => {
                 LEFT JOIN EMPLOYEE AS M ON E.manager_id = M.id
                 WHERE E.manager_id is null;`;
         }
-        connection.query(query, [response.manager_id], (err, res) => {
+        mysqlConnect.query(query, [response.manager_id], (err, res) => {
           if (err) throw err;
           if (res != "") {
             console.table(res);
@@ -190,7 +185,7 @@ const viewEmployeeByManager = () => {
 
 const addEmployee = () => {
 
-  connection.query("SELECT * FROM EMPLOYEE", (err, employeeRes) => {
+  mysqlConnect.query("SELECT * FROM EMPLOYEE", (err, employeeRes) => {
     if (err) throw err;
     
     const employeeChoice = [
@@ -209,7 +204,7 @@ const addEmployee = () => {
     });
 
    
-    connection.query("SELECT * FROM ROLE", (err, roleRes) => {
+    mysqlConnect.query("SELECT * FROM ROLE", (err, roleRes) => {
       if (err) throw err;
 
     
@@ -254,7 +249,7 @@ const addEmployee = () => {
           const query = `INSERT INTO EMPLOYEE (first_name, last_name, role_id, manager_id) VALUES (?)`;
           let manager_id =
             response.manager_id !== 0 ? response.manager_id : null;
-          connection.query(
+          mysqlConnect.query(
             query,
             [
               [
@@ -285,7 +280,7 @@ const addRole = () => {
 
   const departments = [];
 
-  connection.query("SELECT * FROM DEPARTMENT", (err, res) => {
+  mysqlConnect.query("SELECT * FROM DEPARTMENT", (err, res) => {
     if (err) throw err;
 
     res.forEach((dep) => {
@@ -318,7 +313,7 @@ const addRole = () => {
       .prompt(questions)
       .then((response) => {
         const query = `INSERT INTO ROLE (title, salary, department_id) VALUES (?)`;
-        connection.query(
+        mysqlConnect.query(
           query,
           [[response.title, response.salary, response.department]],
           (err, res) => {
@@ -339,7 +334,7 @@ const addRole = () => {
 
 const updateemployeeRole = () => {
   
-  connection.query("SELECT * FROM EMPLOYEE", (err, emplRes) => {
+  mysqlConnect.query("SELECT * FROM EMPLOYEE", (err, emplRes) => {
     if (err) throw err;
   
     const employeeChoice = [];
@@ -351,7 +346,7 @@ const updateemployeeRole = () => {
     });
 
     
-    connection.query("SELECT * FROM ROLE", (err, rolRes) => {
+    mysqlConnect.query("SELECT * FROM ROLE", (err, rolRes) => {
       if (err) throw err;
       
       const roleChoice = [];
@@ -383,7 +378,7 @@ const updateemployeeRole = () => {
         .prompt(questions)
         .then((response) => {
           const query = `UPDATE EMPLOYEE SET ? WHERE ?? = ?;`;
-          connection.query(
+          mysqlConnect.query(
             query,
             [{ role_id: response.role_id }, "id", response.id],
             (err) => {
@@ -406,7 +401,7 @@ const updateemployeeRole = () => {
 
 const updateManager = () => {
  
-  connection.query("SELECT * FROM EMPLOYEE", (err, emplRes) => {
+  mysqlConnect.query("SELECT * FROM EMPLOYEE", (err, emplRes) => {
     if (err) throw err;
 
     const employeeChoice = [];
@@ -452,7 +447,7 @@ const updateManager = () => {
       .then((response) => {
         const query = `UPDATE EMPLOYEE SET ? WHERE id = ?;`;
         let manager_id = response.manager_id !== 0 ? response.manager_id : null;
-        connection.query(
+        mysqlConnect.query(
           query,
           [{ manager_id: manager_id }, response.id],
           (err, res) => {
@@ -472,7 +467,7 @@ const updateManager = () => {
 
 
 const deleteEmployee = () => {
-  connection.query("SELECT * FROM EMPLOYEE", (err, res) => {
+  mysqlConnect.query("SELECT * FROM EMPLOYEE", (err, res) => {
     if (err) throw err;
    
     const employeeChoice = [];
@@ -483,7 +478,6 @@ const deleteEmployee = () => {
         value: id,
       });
     });
-    // Questions for employee to delete
 
     let questions = [
       {
@@ -494,13 +488,12 @@ const deleteEmployee = () => {
       },
     ];
 
-    // Show questions
 
     inquirer
       .prompt(questions)
       .then((response) => {
         const query = `DELETE FROM EMPLOYEE WHERE id = ?`;
-        connection.query(query, [response.id], (err, res) => {
+        mysqlConnect.query(query, [response.id], (err, res) => {
           if (err) throw err;
           console.log(
             `${res.affectedRows} has been deleted!`
@@ -517,7 +510,7 @@ const deleteEmployee = () => {
 
 const viewBudget = () => {
 
-  connection.query("SELECT * FROM DEPARTMENT", (err, res) => {
+  mysqlConnect.query("SELECT * FROM DEPARTMENT", (err, res) => {
     if (err) throw err;
     
     const depChoice = [];
@@ -549,7 +542,7 @@ const viewBudget = () => {
             ON R.department_id = D.id
             WHERE D.id = ?
             `;
-        connection.query(query, [response.id], (err, res) => {
+        mysqlConnect.query(query, [response.id], (err, res) => {
           if (err) throw err;
           console.table(res);
           startPrompt();

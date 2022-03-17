@@ -1,7 +1,7 @@
-DROP DATABASE IF EXISTS emp_DB;
-CREATE database emp_DB;
+DROP DATABASE IF EXISTS employee_DB;
+CREATE database employee_DB;
 
-USE emp_DB;
+USE employee_DB;
 
 CREATE TABLE department (
   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -11,7 +11,7 @@ CREATE TABLE department (
 CREATE TABLE role (
   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   title VARCHAR(300) NOT NULL,
-  salary DECIMAL(200, 2) NULL,
+  salary DECIMAL(65, 2) NULL,
   department_id INT NOT NULL,
   FOREIGN KEY (department_id)
         REFERENCES department(id)
@@ -25,8 +25,9 @@ CREATE TABLE employee (
   role_id INT NOT NULL,
   manager_id INT NULL,
   FOREIGN KEY (role_id)
-        REFERENCES role(id)
-        ON DELETE RESTRICT ON UPDATE CASCADE,
+        REFERENCES role (id)
+        ON DELETE RESTRICT 
+        ON UPDATE CASCADE,
   FOREIGN KEY (manager_id)
         REFERENCES employee(id)
         ON DELETE SET NULL 
